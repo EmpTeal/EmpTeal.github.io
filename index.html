@@ -90,6 +90,38 @@
       text-transform: uppercase;
     }
 
+    .project-links {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .project-link {
+      display: block;
+      padding: 12px 14px;
+      border: 1px solid #e4e6ee;
+      border-radius: 10px;
+      color: var(--ink);
+      text-decoration: none;
+      transition: 0.15s ease;
+    }
+
+    .project-link:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 14px rgba(91, 92, 226, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .project-link strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .project-link span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
     footer {
       padding: 28px 24px;
       text-align: center;
@@ -131,13 +163,35 @@
       <article class="card">
         <h2>Tests</h2>
         <p>Sequence puzzles, IQ-style challenges, and other interactive tests.</p>
-        <span class="label">In progress</span>
+
+        <div class="project-links">
+          <a class="project-link" href="https://github.com/EmpTeal/sequence" target="_blank" rel="noopener">
+            <strong>Sequence</strong>
+            <span>Open repository →</span>
+          </a>
+
+          <a class="project-link" href="https://github.com/EmpTeal/sequencetest" target="_blank" rel="noopener">
+            <strong>Sequence Test</strong>
+            <span>Open repository →</span>
+          </a>
+        </div>
       </article>
 
       <article class="card">
         <h2>Miscellaneous</h2>
-        <p>Integral Theory tools and other projects that do not belong in the main categories.</p>
-        <span class="label">In progress</span>
+        <p>Other projects that do not belong in the main categories.</p>
+
+        <div class="project-links">
+          <a class="project-link" href="https://github.com/EmpTeal/integral-theory-tool" target="_blank" rel="noopener">
+            <strong>Integral Theory Tool</strong>
+            <span>Open repository →</span>
+          </a>
+
+          <a class="project-link" href="https://github.com/EmpTeal/to-do" target="_blank" rel="noopener">
+            <strong>To-Do</strong>
+            <span>Open repository →</span>
+          </a>
+        </div>
       </article>
     </section>
   </main>
