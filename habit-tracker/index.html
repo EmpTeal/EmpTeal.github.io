@@ -7,6 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Keystones">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Daily keystones</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -393,7 +396,16 @@ function statusText(){
   if(gh)return syncText||'GitHub backup is on';
   return syncMode==='account'?'Saved to your account':'Saved on this device only';
 }
-function paintStatus(){var el=document.getElementById('sync');if(el)el.textContent=statusText();}
+function bkLabel(){
+  if(!gh)return 'Not backed up yet. <u>Set up backup</u>';
+  if(/^(Saved to|Loaded from) GitHub$/.test(syncText))return 'Backed up to GitHub. <u>Settings</u>';
+  if(/failed/.test(syncText))return 'GitHub backup needs attention. <u>Settings</u>';
+  return 'Backing up to GitHub. <u>Settings</u>';
+}
+function paintStatus(){
+  var el=document.getElementById('sync');if(el)el.textContent=statusText();
+  var bs=document.getElementById('bksum');if(bs)bs.innerHTML=bkLabel();
+}
 function setSync(m){syncMode=m;paintStatus();}
 function setStatus(t){syncText=t;paintStatus();}
 
@@ -557,7 +569,7 @@ function render(){
      '<button data-act="print">Print this week\'s sheet</button></div>';
 
   var g=gh||{repo:'',token:'',path:'keystones-data.json',branch:''};
-  h+='<details class="backup"'+(bkOpen?' open':'')+'><summary>'+(gh?'Backed up to GitHub. ':'Not backed up yet. ')+'<u>'+(gh?'Settings':'Set up backup')+'</u></summary>'+
+  h+='<details class="backup"'+(bkOpen?' open':'')+'><summary id="bksum">'+bkLabel()+'</summary>'+
     '<div class="bform">'+
     '<p>Saves your progress as one small file in a GitHub repo you own, so clearing your browser cannot erase it. Use a private repo just for data, and a fine-grained token limited to that repo with Contents: read and write. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token</a></p>'+
     '<label for="g-repo">Data repo</label><input id="g-repo" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="username/keystones-data" value="'+esc(g.repo)+'">'+
