@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EAF0F7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Keystones">
+<title>Daily keystones</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF0F7; --surface:#FFFFFF; --ink:#13203B; --muted:#5A6A84; --line:#D3DCE8;
+  --accent:#2447F5; --accent-ink:#FFFFFF; --amber:#E39B0B; --amber-ink:#8A5A00; --amber-on:#3A2500;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1527; --surface:#16213A; --ink:#E7EDF9; --muted:#91A2BF; --line:#273452;
+    --accent:#7F95FF; --accent-ink:#0D1527; --amber:#F2B84B; --amber-ink:#F2B84B; --amber-on:#2A1B00;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1527; --surface:#16213A; --ink:#E7EDF9; --muted:#91A2BF; --line:#273452;
+  --accent:#7F95FF; --accent-ink:#0D1527; --amber:#F2B84B; --amber-ink:#F2B84B; --amber-on:#2A1B00;
+}
+html{scroll-padding-top:env(safe-area-inset-top, 0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.app{max-width:520px;margin:0 auto;padding:18px 16px 40px}
+
+/* header */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.day{font-family:var(--display);font-weight:700;font-size:clamp(40px,12vw,56px);line-height:.95;letter-spacing:-.02em;margin:0}
+.date{color:var(--muted);font-size:15px;margin-top:6px}
+.nav{display:flex;gap:6px}
+.nav button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.nav button:disabled{opacity:.35;cursor:default}
+.nav svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.back{margin-top:10px;border:0;background:none;color:var(--accent);padding:8px 0;font-weight:600}
+
+/* keystone bar */
+.meter{margin-top:20px}
+.segs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg{height:16px;border-radius:8px;background:var(--line);transition:background .25s}
+.seg.s1{background:var(--accent)}
+.seg.s2{background:var(--amber)}
+.seglabels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;font-size:13px;color:var(--muted)}
+.status{margin-top:14px;font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:-.01em}
+.status.win{color:var(--accent)}
+.substatus{color:var(--muted);font-size:14px;margin-top:2px}
+.banner{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--amber);color:var(--ink);font-size:14px}
+.banner b{font-weight:600}
+
+/* windows */
+details.win{margin-top:14px;font-size:14px;color:var(--muted)}
+details.win summary{cursor:pointer;padding:6px 0;list-style:none}
+details.win summary::-webkit-details-marker{display:none}
+details.win summary u{color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap}
+.winform{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);gap:8px 10px;align-items:center;margin-top:6px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.winform label{color:var(--ink)}
+.winform input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;min-width:0;width:100%}
+
+/* streak */
+.streak{margin-top:20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.streak .n{font-family:var(--display);font-weight:700;font-size:28px;line-height:1}
+.streak .l{color:var(--muted);font-size:13px}
+.strip{display:flex;gap:3px;flex-wrap:nowrap}
+.dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);background:transparent;padding:0;flex:none}
+.dot.win{background:var(--accent);border-color:var(--accent)}
+.dot.part{border-color:var(--amber);background:linear-gradient(to top,var(--amber) 50%,transparent 50%)}
+.dot.sel{outline:2px solid var(--ink);outline-offset:2px}
+
+/* groups */
+h2{font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.01em;margin:28px 0 4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 10px}
+.row{display:grid;grid-template-columns:44px 1fr auto;gap:10px 12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.row.key{border-radius:16px;border-left:5px solid var(--accent);padding-left:10px}
+.tick{width:44px;height:44px;border-radius:50%;border:2px solid var(--muted);background:transparent;display:grid;place-items:center;padding:0;transition:background .15s,border-color .15s,transform .1s}
+.row.key .tick{border-color:var(--accent)}
+.tick:active{transform:scale(.92)}
+.tick svg{width:22px;height:22px;stroke:var(--accent-ink);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .15s}
+.tick.full{background:var(--accent);border-color:var(--accent)}
+.tick.full svg{opacity:1}
+.tick.floor{border-color:var(--amber);background:linear-gradient(to top,var(--amber) 50%,transparent 50%)}
+.t{font-weight:600;font-size:16px}
+.when{display:inline-block;margin-left:8px;padding:1px 9px;border-radius:11px;font-size:12.5px;font-weight:600;color:var(--accent);border:1.5px solid var(--accent);vertical-align:1px;white-space:nowrap}
+.d{color:var(--muted);font-size:14px}
+.f{color:var(--amber-ink);font-size:13px;margin-top:2px}
+.pips{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}
+.pips i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--muted);display:block}
+.pips i.on{background:var(--accent);border-color:var(--accent)}
+.fbtn{height:32px;padding:0 12px;border-radius:16px;border:1.5px solid var(--amber);background:transparent;color:var(--amber-ink);font-size:13px;font-weight:600;align-self:center}
+.fbtn[aria-pressed="true"]{background:var(--amber);color:var(--amber-on)}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* illustration tiles */
+.ico{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:54px;padding:6px 5px 4px;border-radius:10px;background:#F2F5FA;border:1px solid #E1E8F2}
+.tile svg{width:40px;height:40px;display:block}
+.tile span{font-size:10.5px;line-height:1.2;color:#5A6A84;text-align:center;white-space:nowrap}
+
+/* backup */
+details.backup{margin-top:14px;font-size:14px;color:var(--muted)}
+details.backup summary{cursor:pointer;padding:6px 0;list-style:none}
+details.backup summary::-webkit-details-marker{display:none}
+details.backup summary u{color:var(--accent);text-decoration:none;font-weight:600}
+.bform{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 10px;align-items:center;margin-top:6px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.bform p{grid-column:1 / -1;margin:0 0 4px;font-size:13px;line-height:1.45}
+.bform a{color:var(--accent)}
+.bform label{color:var(--ink)}
+.bform input[type=text],.bform input[type=password]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;min-width:0;width:100%}
+.brow{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.brow button,.brow .filebtn{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px;font-weight:600;font-size:14px;color:var(--ink);cursor:pointer}
+.brow button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* footer */
+.foot{margin-top:28px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;color:var(--muted);font-size:13px}
+.foot button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-weight:600;font-size:14px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* printable sheet */
+.sheet{display:none}
+@media print{
+  :root{padding:0!important}
+  html,body{background:#fff!important;color:#000!important}
+  .app{display:none!important}
+  .sheet{display:block;font-family:var(--body);color:#000}
+  @page{margin:.5in}
+}
+.sheet h1{font-family:var(--display);font-size:26px;margin:0 0 2px}
+.sheet p{margin:0 0 10px;font-size:12px;color:#333}
+.sheet table{width:100%;border-collapse:collapse;table-layout:fixed}
+.sheet th{font-size:11px;font-weight:600;text-align:center;padding:2px 0}
+.sheet th small{display:block;font-weight:400;color:#555}
+.sheet td{border-top:1px solid #999;padding:5px 2px;text-align:center;vertical-align:middle}
+.sheet td.lab{text-align:left;width:38%;padding-right:8px}
+.sheet td.lab b{display:block;font-size:12.5px}
+.sheet td.lab span{display:block;font-size:10px;color:#444;line-height:1.25}
+.sheet td i{display:inline-block;width:20px;height:20px;border:1.6px solid #000;border-radius:4px}
+.sheet tr.k td.lab b{font-size:14px}
+.sheet tr.k td i{width:24px;height:24px;border-width:2.2px}
+.sheet tr.grp td{border-top:2px solid #000;text-align:left;font-weight:600;font-size:12px;padding-top:8px;background:#f1f1f1}
+.sheet tr.win td i{border-radius:50%}
+.sheet .rules{margin-top:12px;font-size:11px;color:#222}
+</style>
+</head>
+<body>
+<main class="app" id="app" aria-live="polite"></main>
+<section class="sheet" id="sheet"></section>
+
+<script>
+(function(){
+/* ---------- illustrations (inline SVG, 64x64) ---------- */
+var O='#1E2B4A';
+var S=' stroke="'+O+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"';
+var S2=' stroke="'+O+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"';
+function sv(inner){return '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">'+inner+'</svg>'}
+
+function ledGrid(){
+  var s='';
+  for(var r=0;r<4;r++)for(var c=0;c<6;c++){
+    var x=15+c*6.8,y=17+r*7.5;
+    s+='<circle cx="'+x+'" cy="'+y+'" r="4" fill="#FF5A5F" opacity=".28"/><circle cx="'+x+'" cy="'+y+'" r="2.3" fill="#FF6B6F"/>';
+  }
+  return s;
+}
+function bead(i){
+  var a=i*30*Math.PI/180;
+  return '<circle cx="'+(25+13*Math.cos(a)).toFixed(1)+'" cy="'+(30+13*Math.sin(a)).toFixed(1)+'" r="2.7" fill="#8A5A3B" stroke="'+O+'" stroke-width="1.3"/>';
+}
+function allBeads(){var s='';for(var i=0;i<12;i++)s+=bead(i);return s}
+
+var ICONS={
+ coffee:sv(
+  '<path d="M26 15c-3 3 3 5 0 9M33 12c-3 3 3 5 0 9M40 15c-3 3 3 5 0 9" fill="none" stroke="#9AA7BD" stroke-width="2.5" stroke-linecap="round"/>'+
+  '<path d="M44 33h3a6 6 0 0 1 0 12h-5" fill="none"'+S+'/>'+
+  '<path d="M16 30h28v11a14 14 0 0 1-14 14 14 14 0 0 1-14-14z" fill="#fff"'+S+'/>'+
+  '<ellipse cx="30" cy="30" rx="14" ry="3.5" fill="#8A5A3B"'+S+'/>'+
+  '<ellipse cx="30" cy="57" rx="21" ry="3.2" fill="#DDE4F0"'+S+'/>'),
+ sun:sv(
+  '<path d="M47 32h7M42.6 42.6l4.9 4.9M32 47v7M21.4 42.6l-4.9 4.9M17 32h-7M21.4 21.4l-4.9-4.9M32 17v-7M42.6 21.4l4.9-4.9" fill="none" stroke="#F5B82E" stroke-width="3.5" stroke-linecap="round"/>'+
+  '<circle cx="32" cy="32" r="10.5" fill="#F5B82E"'+S+'/>'),
+ computer:sv(
+  '<path d="M28 42v8h8v-8" fill="#C9D3E6"'+S+'/>'+
+  '<rect x="21" y="50" width="22" height="5" rx="2.5" fill="#C9D3E6"'+S+'/>'+
+  '<rect x="9" y="10" width="46" height="33" rx="4" fill="#fff"'+S+'/>'+
+  '<rect x="13.5" y="14.5" width="37" height="24" rx="1.5" fill="#2447F5"/>'+
+  '<path d="M18 21h13M18 26h22M18 31h9" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".9"/>'),
+ humid:sv(
+  '<path d="M26 17c-3.5-3 3.5-5 0-10M33 17c-3.5-3 3.5-5 0-10M40 17c-3.5-3 3.5-5 0-10" fill="none" stroke="#7FB5E8" stroke-width="2.5" stroke-linecap="round"/>'+
+  '<path d="M18 30h28l-2 22a5 5 0 0 1-5 4.5H25a5 5 0 0 1-5-4.5z" fill="#EAF2FC"/>'+
+  '<path d="M19.2 42q3.2-3 6.4 0t6.4 0t6.4 0t5.6 0l-1.2 10a4 4 0 0 1-4 3.5H25a4 4 0 0 1-4-3.5z" fill="#7FB5E8"/>'+
+  '<path d="M18 30h28l-2 22a5 5 0 0 1-5 4.5H25a5 5 0 0 1-5-4.5z" fill="none"'+S+'/>'+
+  '<rect x="22" y="22" width="20" height="8" rx="3" fill="#fff"'+S+'/>'),
+ air:sv(
+  '<path d="M24 7q4-3 8 0t8 0" fill="none" stroke="#7FB5E8" stroke-width="2.2" stroke-linecap="round"/>'+
+  '<rect x="15" y="12" width="34" height="44" rx="6" fill="#fff"'+S+'/>'+
+  '<path d="M21 20h22M21 26h22M21 32h22M21 38h22" stroke="#9AA7BD" stroke-width="2.4" stroke-linecap="round" fill="none"/>'+
+  '<circle cx="32" cy="47.5" r="3" fill="#3FA66B"/>'),
+ clock:sv(
+  '<path d="M22 55l-4 6M42 55l4 6" fill="none"'+S+'/>'+
+  '<path d="M14 20a7 7 0 0 1 14 0z" fill="#E0B84C"'+S+'/><path d="M36 20a7 7 0 0 1 14 0z" fill="#E0B84C"'+S+'/>'+
+  '<path d="M32 12v7" fill="none"'+S+'/><circle cx="32" cy="11" r="2.4" fill="#E0B84C"'+S2+'/>'+
+  '<circle cx="32" cy="38" r="20" fill="#E0B84C"'+S+'/>'+
+  '<circle cx="32" cy="38" r="15.5" fill="#14204A"/>'+
+  '<circle cx="29" cy="40" r="7.5" fill="#F7E7A6"/><circle cx="32.5" cy="38" r="6.6" fill="#14204A"/>'+
+  '<circle cx="38" cy="29.5" r=".9" fill="#fff"/><circle cx="41" cy="45" r=".9" fill="#fff"/><circle cx="24" cy="31" r=".9" fill="#fff"/>'+
+  '<g fill="#fff"><circle cx="38.3" cy="27.2" r=".8"/><circle cx="42.8" cy="31.7" r=".8"/><circle cx="42.8" cy="44.3" r=".8"/><circle cx="38.3" cy="48.8" r=".8"/><circle cx="25.7" cy="48.8" r=".8"/><circle cx="21.2" cy="44.3" r=".8"/><circle cx="21.2" cy="31.7" r=".8"/><circle cx="25.7" cy="27.2" r=".8"/></g>'+
+  '<g fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="5" font-weight="700" text-anchor="middle"><text x="32" y="28.6">12</text><text x="42.6" y="39.8">3</text><text x="32" y="51.4">6</text><text x="21.4" y="39.8">9</text></g>'+
+  '<path d="M32 38l1.6-5.8M32 38v8.3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" fill="none"/><circle cx="32" cy="38" r="1.6" fill="#E0B84C"/>'),
+ vitamins:sv(
+  '<g transform="rotate(-35 22 22)"><rect x="9" y="15" width="26" height="14" rx="7" fill="#fff"'+S+'/>'+
+  '<path d="M16 29H22V15H16a7 7 0 0 0 0 14z" fill="#E5383B"/><rect x="9" y="15" width="26" height="14" rx="7" fill="none"'+S+'/></g>'+
+  '<circle cx="46" cy="20" r="9" fill="#F5B82E"'+S+'/><path d="M39.5 20h13" stroke="'+O+'" stroke-width="1.6" stroke-linecap="round"/>'+
+  '<ellipse cx="24" cy="46" rx="12" ry="7.5" fill="#F7D154"'+S+'/><ellipse cx="20" cy="43.5" rx="5" ry="2" fill="#fff" opacity=".7"/>'+
+  '<circle cx="47" cy="47" r="6.5" fill="#3FA66B"'+S+'/><circle cx="45" cy="45" r="1.8" fill="#fff" opacity=".6"/>'),
+ redlight:sv(
+  '<path d="M22 49l-5 10M42 49l5 10" fill="none"'+S+'/>'+
+  '<rect x="7" y="8" width="50" height="42" rx="5" fill="#4A1116"'+S+'/>'+ledGrid()),
+ meditate:sv(
+  '<circle cx="25" cy="30" r="13" fill="none" stroke="#8A5A3B" stroke-width="1.2"/>'+allBeads()+
+  '<path d="M25 43v9M21.5 56h7M25 52v8" fill="none" stroke="#8A5A3B" stroke-width="2.2" stroke-linecap="round"/>'+
+  '<circle cx="39" cy="30" r="13" fill="none" stroke="'+O+'" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="72 10" transform="rotate(-100 39 30)"/>'+
+  bead(2)),
+ pushup:sv(
+  '<path d="M6 54h52" stroke="#C9D3E6" stroke-width="3" stroke-linecap="round"/>'+
+  '<path d="M37 40L53 51" stroke="'+O+'" stroke-width="6" stroke-linecap="round"/>'+
+  '<path d="M19 33L37 40" stroke="#2447F5" stroke-width="8" stroke-linecap="round"/>'+
+  '<path d="M19 36V52" stroke="#F2C6A0" stroke-width="4.5" stroke-linecap="round"/>'+
+  '<circle cx="11.5" cy="30" r="5.5" fill="#F2C6A0"'+S2+'/>'+
+  '<path d="M44 20v-8m0 0l-3.5 3.5M44 12l3.5 3.5M52 12v8m0 0l-3.5-3.5M52 20l3.5-3.5" fill="none" stroke="#9AA7BD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'),
+ plate:sv(
+  '<circle cx="32" cy="32" r="27" fill="#fff"'+S+'/><circle cx="32" cy="32" r="20.5" fill="none" stroke="#DDE4F0" stroke-width="2"/>'+
+  '<path d="M14 36c0-7 8-10 14-8s9 8 5 13-14 6-19-5z" fill="#FFF3D6" stroke="'+O+'" stroke-width="1.8" stroke-linejoin="round"/>'+
+  '<path d="M20 35h3M25 33l3 1M22 40l3-1M28 38h3" stroke="#E2C98F" stroke-width="1.6" stroke-linecap="round"/>'+
+  '<path d="M41 28v4" stroke="#2C7A4B" stroke-width="3" stroke-linecap="round"/>'+
+  '<g fill="#3FA66B" stroke="'+O+'" stroke-width="1.6"><circle cx="38" cy="19.5" r="5.5"/><circle cx="45" cy="22" r="5"/><circle cx="41.5" cy="25.5" r="5"/></g>'+
+  '<g transform="rotate(-25 44 44)"><rect x="34" y="37" width="20" height="13" rx="6.5" fill="#B5653A" stroke="'+O+'" stroke-width="1.8"/><path d="M40 38.5v10M45 38.5v10M50 38.5v10" stroke="#7A3E1E" stroke-width="1.6" stroke-linecap="round"/></g>'),
+ brush:sv(
+  '<g transform="rotate(22 32 32)">'+
+  '<rect x="29.5" y="10" width="5" height="14" rx="2" fill="#fff"'+S2+'/>'+
+  '<rect x="27" y="3" width="10" height="11" rx="5" fill="#fff"'+S2+'/><rect x="29" y="4.6" width="6" height="4" rx="1.2" fill="#3FA66B"/>'+
+  '<rect x="26.5" y="20" width="11" height="38" rx="5.5" fill="#EAF2FC"'+S+'/>'+
+  '<circle cx="32" cy="31" r="2.8" fill="#2447F5"/><rect x="30" y="40" width="4" height="7" rx="2" fill="#7FB5E8"/></g>'),
+ floss:sv(
+  '<path d="M32 24L22 9M32 24L42 9M32 24V57" fill="none" stroke="'+O+'" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>'+
+  '<path d="M32 24L22 9M32 24L42 9M32 24V57" fill="none" stroke="#7FB5E8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
+  '<path d="M22 9Q32 16 42 9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M22 9Q32 16 42 9" fill="none" stroke="#5C6B85" stroke-width="1" stroke-linecap="round"/>'),
+ wash:sv(
+  '<rect x="22" y="28" width="24" height="28" rx="6" fill="#CDEBE7"'+S+'/>'+
+  '<rect x="27" y="36" width="14" height="12" rx="2.5" fill="#fff"/><path d="M34 38c-2 3-3 4.5-3 6a3 3 0 0 0 6 0c0-1.5-1-3-3-6z" fill="#7FB5E8"/>'+
+  '<rect x="31" y="21" width="6" height="8" fill="#fff"'+S2+'/>'+
+  '<rect x="24" y="12" width="16" height="9" rx="3" fill="#fff"'+S+'/><rect x="16" y="13.5" width="9" height="4.5" rx="2" fill="#fff"'+S2+'/>'+
+  '<g fill="#fff" stroke="#9AA7BD" stroke-width="1.6"><circle cx="13" cy="23" r="4"/><circle cx="8.5" cy="28.5" r="3"/><circle cx="16" cy="29" r="3.3"/><circle cx="19.5" cy="23.5" r="2.4"/></g>'),
+ ayr:sv(
+  '<rect x="20" y="5" width="24" height="7" rx="1.5" fill="#C9D3E6"'+S+'/><path d="M24 7.5h16M24 10h16" stroke="#8A97AE" stroke-width="1" stroke-linecap="round"/>'+
+  '<path d="M20 12h24v26l-7 8H27l-7-8z" fill="#fff"/>'+
+  '<path d="M20.8 22H43.2V37.6l-6.6 7.5H27.4l-6.6-7.5z" fill="#1B8FB5"/>'+
+  '<path d="M20 12h24v26l-7 8H27l-7-8z" fill="none"'+S+'/>'+
+  '<path d="M32 14c-4 0-6.5 2.5-6.5 5.5 4 0 6.5-2 6.5-5.5z" fill="#3FA66B"/><path d="M32 14c4 0 6.5 2.5 6.5 5.5-4 0-6.5-2-6.5-5.5z" fill="#67C48A"/>'+
+  '<text x="32" y="35.5" font-family="Arial,Helvetica,sans-serif" font-size="9.5" font-weight="700" fill="#fff" text-anchor="middle">AYR</text>'+
+  '<rect x="27" y="46" width="10" height="11" rx="2.5" fill="#fff"'+S+'/><path d="M30.5 49.5v4M33.5 49.5v4" stroke="#C9D3E6" stroke-width="1.4" stroke-linecap="round"/>'),
+ hims:sv(
+  '<g fill="#F28C28" opacity=".65"><circle cx="12" cy="12" r="1.3"/><circle cx="9" cy="15.5" r="1.3"/><circle cx="13" cy="17" r="1.3"/><circle cx="6.5" cy="11" r="1.1"/><circle cx="10" cy="20.5" r="1.1"/></g>'+
+  '<rect x="20" y="30" width="24" height="27" rx="5" fill="#F4D2AE"'+S+'/>'+
+  '<rect x="24" y="38" width="16" height="11" rx="2" fill="#FFF4E6"/><rect x="24" y="43.5" width="16" height="2.6" fill="#F28C28"/>'+
+  '<rect x="29" y="24" width="6" height="7" fill="#E9B98A"'+S2+'/>'+
+  '<rect x="27" y="20" width="10" height="5" rx="1.5" fill="#fff"'+S2+'/>'+
+  '<rect x="25" y="10" width="14" height="10" rx="3" fill="#fff"'+S+'/><rect x="17.5" y="12.5" width="8.5" height="4.2" rx="2" fill="#fff"'+S2+'/>'),
+ guitar:sv(
+  '<g transform="rotate(38 32 34)">'+
+  '<path id="strat" d="M26 35C22 28 16.5 27 15.5 33C15 38 19.5 41 19.5 46C14 49 15 60 25 61.5C30 62.3 34 62.3 39 61.5C49 60 50 49 44.5 46C44.5 41 49 38 48.5 33C47.5 27 42 28 38 35Z" fill="#DDA255"'+S+'/>'+
+  '<path d="M20 48q12-7 24 0M20.5 53q11.5-6 23 0M22 58q10-5 20 0M24 41q8-3 16 0" fill="none" stroke="#B07A38" stroke-width="1.2" opacity=".75" stroke-linecap="round"/>'+
+  '<path d="M23 39c0-3 4-4.5 8-4.5h8c2 0 4 2 4 4.5v12c0 4-3 7-8 7h-5c-4 0-7-3-7-8z" fill="#1B1B1F"/>'+
+  '<g fill="#E8E8E8"><rect x="26" y="40" width="12" height="2.6" rx="1"/><rect x="26" y="45" width="12" height="2.6" rx="1"/><rect x="26" y="50" width="12" height="2.6" rx="1"/></g>'+
+  '<rect x="26" y="56" width="12" height="2.4" rx="1" fill="#C9C9C9"/>'+
+  '<rect x="28.5" y="10" width="7" height="27" fill="#5A2E1E"'+S2+'/>'+
+  '<path d="M29 15h6M29 20h6M29 25h6M29 30h6" stroke="#C9B28F" stroke-width=".9"/>'+
+  '<path d="M28.5 10L27.5 1.5Q32-.5 36.5 1.5L35.5 10z" fill="#E3B574"'+S2+'/>'+
+  '<g fill="#C9C9C9"><circle cx="38.6" cy="3.5" r=".9"/><circle cx="38.4" cy="6.5" r=".9"/><circle cx="25.4" cy="4" r=".9"/></g>'+
+  '<path d="M30.3 3V57M32 3V57M33.7 3V57" stroke="#EDEDED" stroke-width=".55"/>'+
+  '</g>'),
+ comics:sv(
+  '<rect x="9" y="8" width="46" height="48" rx="3.5" fill="#fff"'+S+'/>'+
+  '<rect x="14" y="13" width="36" height="16" rx="1.5" fill="#F5B82E"'+S2+'/>'+
+  '<rect x="14" y="33" width="16" height="18" rx="1.5" fill="#7FB5E8"'+S2+'/>'+
+  '<rect x="34" y="33" width="16" height="18" rx="1.5" fill="#E5383B"'+S2+'/>'+
+  '<ellipse cx="32" cy="21" rx="10" ry="5" fill="#fff"'+S2+'/><path d="M27 25.5l-2.5 4 6-2.8" fill="#fff"'+S2+'/>'),
+ game:sv(
+  '<path d="M14 24H50a8 8 0 0 1 8 8l-2 14a6 6 0 0 1-10 3l-5-7H23l-5 7a6 6 0 0 1-10-3L6 32a8 8 0 0 1 8-8z" fill="#7A5CF0"'+S+'/>'+
+  '<rect x="14" y="33" width="10" height="3.4" rx="1" fill="#fff"/><rect x="17.3" y="29.7" width="3.4" height="10" rx="1" fill="#fff"/>'+
+  '<circle cx="44" cy="29.5" r="2.4" fill="#F5B82E"/><circle cx="50" cy="34.5" r="2.4" fill="#E5383B"/><circle cx="44" cy="39.5" r="2.4" fill="#3FA66B"/><circle cx="38" cy="34.5" r="2.4" fill="#7FB5E8"/>'),
+ video:sv(
+  '<rect x="10" y="29" width="44" height="26" rx="3.5" fill="#1E2B4A"'+S+'/>'+
+  '<path d="M28 35v13l12-6.5z" fill="#fff"/>'+
+  '<g transform="rotate(-7 10 29)"><rect x="10" y="18" width="44" height="10" rx="2.5" fill="#fff"'+S+'/>'+
+  '<path d="M20 18l-6 10M32 18l-6 10M44 18l-6 10" stroke="'+O+'" stroke-width="3.4" stroke-linecap="round"/></g>')
+};
+
+/* ---------- habits ---------- */
+var KEYS=[
+ {id:'wake',when:'wake',t:'Wake in your window',d:'Out of bed, coffee, a few minutes of sunlight.',f:'Floor: up within an hour of the window.',
+  ico:[['coffee','Coffee'],['sun','Sunlight']]},
+ {id:'work',t:'Work start',d:'One hour of real work.',f:'Floor: 15 minutes, then you may stop.',
+  ico:[['computer','Work']]},
+ {id:'bed',when:'bed',t:'In bed',d:'Humidifier, air filter, TV timer, decide what to watch, then lights out.',f:'Floor: in bed within an hour, TV decided first.',
+  ico:[['humid','Humidifier'],['air','Air filter'],['clock','In bed']]}
+];
+var BONUS=[
+ {id:'morning',t:'Morning cluster',d:'Vitamins, red light 10 min, meditate 20 min.',f:'Floor: vitamins and 2 minutes of meditation.',
+  ico:[['vitamins','Vitamins'],['redlight','Red light'],['meditate','Meditate']]},
+ {id:'move',t:'Move',d:'20 push-ups and 20 squats.',f:'Floor: 5 and 5.',
+  ico:[['pushup','Move']]},
+ {id:'meal',t:'One real meal',d:'Meat and veg, your main meal of the day.',f:'Floor: protein plus any vegetable.',
+  ico:[['plate','Real meal']]},
+ {id:'pm',t:'PM routine',d:'Teeth, floss, face, Hims, nasal gel.',f:'Floor: teeth and Hims.',
+  ico:[['brush','Toothbrush'],['floss','Floss'],['wash','Face wash'],['hims','Hims spray'],['ayr','Nasal gel']]}
+];
+var WEEK=[
+ {id:'guitar',t:'Guitar',d:'A practice session.',f:'Floor: 10 minutes.',target:4,
+  ico:[['guitar','Guitar']]},
+ {id:'creative',t:'Creative project',d:'A real session on a project.',f:'Floor: 15 minutes.',target:5,
+  ico:[['comics','Comics'],['game','Games'],['video','Video']]}
+];
+var LS='keystones-v1', DNAMES=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var appEl=document.getElementById('app'), sheetEl=document.getElementById('sheet');
+var docRef=null, saveTimer=null, syncMode='device', winOpen=false, bkOpen=false;
+var GHK='keystones-gh', gh=null, ghSha=null, ghTimer=null, ghBusy=false, ghDirty=false, syncText='';
+
+function pad(n){return String(n).padStart(2,'0')}
+function keyOf(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function parse(k){var p=k.split('-').map(Number);return new Date(p[0],p[1]-1,p[2],12)}
+function addDays(k,n){var d=parse(k);d.setDate(d.getDate()+n);return keyOf(d)}
+// the tracker day rolls over at 4 AM so a late bedtime still counts for the day you lived
+function nowKey(){return keyOf(new Date(Date.now()-4*36e5))}
+function weekKeys(k){var dow=(parse(k).getDay()+6)%7, m=addDays(k,-dow), a=[];for(var i=0;i<7;i++)a.push(addDays(m,i));return a}
+function fmtT(t){
+  if(!/^\d\d:\d\d$/.test(t||''))return '';
+  var p=t.split(':').map(Number), h=p[0], ap=h>=12?'PM':'AM';
+  h=h%12||12; return h+':'+pad(p[1])+' '+ap;
+}
+function fmtRange(r){
+  if(!r)return '';
+  var x=fmtT(r[0]),y=fmtT(r[1]); if(!x||!y)return '';
+  return (x.slice(-2)===y.slice(-2)?x.slice(0,-3):x)+'\u2013'+y;
+}
+function fmtLong(k,o){return parse(k).toLocaleDateString(undefined,o)}
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+
+var today=nowKey(), sel=today;
+var state=load();
+gh=loadGh();
+
+function fresh(){return {v:1,first:today,updated:0,days:{},settings:{set:false,wake:['09:00','10:00'],bed:['00:00','01:00']}}}
+function norm(s){
+  var f=fresh(); if(!s||typeof s!=='object')return f;
+  f.first=typeof s.first==='string'?s.first:today;
+  f.updated=+s.updated||0;
+  f.days=(s.days&&typeof s.days==='object')?s.days:{};
+  // only keep saved windows if the person actually changed them
+  if(s.settings&&s.settings.set){
+    f.settings.set=true;
+    if(Array.isArray(s.settings.wake))f.settings.wake=s.settings.wake.slice(0,2);
+    if(Array.isArray(s.settings.bed))f.settings.bed=s.settings.bed.slice(0,2);
+  }
+  return f;
+}
+function load(){
+  try{var r=localStorage.getItem(LS);if(r)return norm(JSON.parse(r));}catch(e){}
+  return fresh();
+}
+function persistLocal(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
+function save(){
+  state.updated=Date.now();
+  persistLocal();
+  if(docRef){
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(function(){
+      docRef.set(state).then(function(){setSync('account')}).catch(function(){setSync('device')});
+    },500);
+  }
+  ghSchedule();
+}
+function statusText(){
+  if(gh)return syncText||'GitHub backup is on';
+  return syncMode==='account'?'Saved to your account':'Saved on this device only';
+}
+function paintStatus(){var el=document.getElementById('sync');if(el)el.textContent=statusText();}
+function setSync(m){syncMode=m;paintStatus();}
+function setStatus(t){syncText=t;paintStatus();}
+
+/* ---------- GitHub backup (commits one JSON file to a repo you choose) ---------- */
+function loadGh(){
+  try{var r=JSON.parse(localStorage.getItem(GHK)||'null');if(r&&r.token&&r.repo)return r}catch(e){}
+  return null;
+}
+function ghUrl(){return 'https://api.github.com/repos/'+gh.repo+'/contents/'+encodeURI(gh.path||'keystones-data.json')}
+function ghHeaders(){return {'Authorization':'Bearer '+gh.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}}
+function b64e(s){var b=new TextEncoder().encode(s),x='';b.forEach(function(c){x+=String.fromCharCode(c)});return btoa(x)}
+function b64d(s){var x=atob(s.replace(/\s/g,'')),a=new Uint8Array(x.length);for(var i=0;i<x.length;i++)a[i]=x.charCodeAt(i);return new TextDecoder().decode(a)}
+function ghErr(status){
+  if(status===401)return 'token rejected';
+  if(status===403)return 'token lacks permission (needs Contents: read and write)';
+  if(status===404)return 'repo not found (check the name and token access)';
+  return 'GitHub error '+status;
+}
+async function ghPull(){
+  var q=gh.branch?'?ref='+encodeURIComponent(gh.branch):'';
+  var r=await fetch(ghUrl()+q,{headers:ghHeaders(),cache:'no-store'});
+  if(r.status===404){ghSha=null;return null}
+  if(!r.ok)throw new Error(ghErr(r.status));
+  var j=await r.json(); ghSha=j.sha;
+  return JSON.parse(b64d(j.content));
+}
+async function ghPush(retried){
+  var body={message:'Update keystones '+new Date().toISOString().slice(0,16).replace('T',' '),content:b64e(JSON.stringify(state,null,1))};
+  if(ghSha)body.sha=ghSha;
+  if(gh.branch)body.branch=gh.branch;
+  var r=await fetch(ghUrl(),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},ghHeaders()),body:JSON.stringify(body)});
+  if((r.status===409||r.status===422)&&!retried){
+    var remote=await ghPull();
+    if(remote&&norm(remote).updated>state.updated){state=norm(remote);persistLocal();render();return}
+    return ghPush(true);
+  }
+  if(!r.ok)throw new Error(ghErr(r.status));
+  var j=await r.json(); ghSha=j.content&&j.content.sha;
+}
+function ghSchedule(){
+  if(!gh)return;
+  ghDirty=true; clearTimeout(ghTimer);
+  setStatus('Saved on this device, saving to GitHub shortly');
+  ghTimer=setTimeout(ghRun,4000);
+}
+async function ghRun(){
+  if(!gh)return;
+  if(ghBusy){ghTimer=setTimeout(ghRun,1500);return}
+  ghBusy=true; ghDirty=false; setStatus('Saving to GitHub');
+  try{await ghPush();setStatus('Saved to GitHub');}
+  catch(e){setStatus('GitHub save failed ('+e.message+'). Saved on this device.');}
+  ghBusy=false;
+  if(ghDirty)ghSchedule();
+}
+async function ghInit(){
+  if(!gh)return;
+  ghBusy=true; setStatus('Checking GitHub');
+  try{
+    var remote=await ghPull();
+    var rs=remote?norm(remote):null;
+    if(rs&&rs.updated>state.updated){state=rs;persistLocal();render();setStatus('Loaded from GitHub');}
+    else if(!rs||rs.updated<state.updated){await ghPush();setStatus('Saved to GitHub');}
+    else setStatus('Saved to GitHub');
+  }catch(e){setStatus('GitHub sync failed ('+e.message+'). Saved on this device.');}
+  ghBusy=false;
+  if(ghDirty)ghSchedule();
+}
+
+function dayOf(k){return state.days[k]||{}}
+function isWin(k){var d=dayOf(k);return KEYS.every(function(h){return d[h.id]})}
+function anyChecks(k){return Object.keys(dayOf(k)).length>0}
+function weekCount(id,k){return weekKeys(k).filter(function(x){return dayOf(x)[id]}).length}
+function streak(){
+  var k=today,n=0;
+  if(!isWin(k))k=addDays(k,-1);
+  while(isWin(k)&&n<1000){n++;k=addDays(k,-1)}
+  return n;
+}
+function toggle(k,id,val){
+  var d=state.days[k]||(state.days[k]={});
+  if(d[id]===val)delete d[id];else d[id]=val;
+  if(!Object.keys(d).length)delete state.days[k];
+  save();render();
+}
+
+function tiles(h){
+  if(!h.ico)return '';
+  return '<div class="ico">'+h.ico.map(function(p){
+    return '<div class="tile">'+ICONS[p[0]]+'<span>'+p[1]+'</span></div>';
+  }).join('')+'</div>';
+}
+function row(h,k,cls,extra){
+  var v=dayOf(k)[h.id]||0;
+  var chip=h.when?'<span class="when">'+fmtRange(state.settings[h.when])+'</span>':'';
+  return '<div class="row '+cls+'">'+
+    '<button class="tick '+(v===1?'full':v===2?'floor':'')+'" data-act="full" data-id="'+h.id+'" aria-pressed="'+(v===1)+'" aria-label="Done in full: '+h.t+'">'+
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>'+
+    '<div><div class="t">'+h.t+chip+'</div><div class="d">'+h.d+(extra||'')+'</div><div class="f">'+h.f+'</div></div>'+
+    '<button class="fbtn" data-act="floor" data-id="'+h.id+'" aria-pressed="'+(v===2)+'" aria-label="Done at floor level: '+h.t+'">Floor</button>'+
+    tiles(h)+
+  '</div>';
+}
+function pips(id,target,k){
+  var c=weekCount(id,k),s='<span class="pips" aria-hidden="true">';
+  for(var i=0;i<target;i++)s+='<i class="'+(i<c?'on':'')+'"></i>';
+  return ' This week '+c+' of '+target+s+'</span>';
+}
+function windowSummary(){
+  return 'Wake '+fmtRange(state.settings.wake)+'. In bed '+fmtRange(state.settings.bed)+'. ';
+}
+
+function render(){
+  var d=dayOf(sel), isToday=sel===today, i;
+  var kv=KEYS.map(function(h){return d[h.id]||0});
+  var kn=kv.filter(Boolean).length, win=kn===3;
+  var bonus=BONUS.filter(function(h){return d[h.id]}).length;
+  var yday=addDays(today,-1);
+
+  var h='<div class="top"><div><h1 class="day">'+fmtLong(sel,{weekday:'long'})+'</h1>'+
+    '<div class="date">'+fmtLong(sel,{month:'long',day:'numeric'})+(isToday?', today':'')+'</div></div>'+
+    '<div class="nav"><button data-act="prev" aria-label="Previous day"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>'+
+    '<button data-act="next" aria-label="Next day"'+(isToday?' disabled':'')+'><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div></div>';
+  if(!isToday)h+='<button class="back" data-act="today">Back to today</button>';
+
+  h+='<div class="meter"><div class="segs" role="img" aria-label="'+kn+' of 3 keystones done">'+
+    kv.map(function(v){return '<div class="seg s'+v+'"></div>'}).join('')+'</div>'+
+    '<div class="seglabels"><span>Wake</span><span>Work</span><span>Bed</span></div>'+
+    '<div class="status'+(win?' win':'')+'">'+(win?'This day counts.':kn+' of 3 keystones')+'</div>'+
+    '<div class="substatus">'+(win?bonus+' of 4 extras done.':'All three make the day count. Floor versions count too.')+'</div></div>';
+
+  if(isToday&&!win&&state.first<today&&!isWin(yday)){
+    h+='<div class="banner"><b>Yesterday missed.</b> Never miss twice. Floor versions count today.</div>';
+  }
+
+  h+='<details class="win"'+(winOpen?' open':'')+'><summary><span id="winsum">'+windowSummary()+'</span><u>Change</u></summary>'+
+    '<div class="winform">'+
+    '<label for="w0">Wake from</label><input id="w0" type="time" value="'+state.settings.wake[0]+'">'+
+    '<label for="w1">to</label><input id="w1" type="time" value="'+state.settings.wake[1]+'">'+
+    '<label for="b0">In bed from</label><input id="b0" type="time" value="'+state.settings.bed[0]+'">'+
+    '<label for="b1">to</label><input id="b1" type="time" value="'+state.settings.bed[1]+'">'+
+    '</div></details>';
+
+  var sn=streak(), strip='';
+  for(i=13;i>=0;i--){
+    var k=addDays(today,-i);
+    var c=isWin(k)?'win':anyChecks(k)?'part':'';
+    strip+='<button class="dot '+c+(k===sel?' sel':'')+'" data-act="go" data-k="'+k+'" aria-label="'+fmtLong(k,{weekday:'long',month:'short',day:'numeric'})+(c==='win'?', counted':c?', partly done':'')+'"></button>';
+  }
+  h+='<div class="streak"><div><div class="n">'+sn+'</div><div class="l">day streak</div></div><div class="strip">'+strip+'</div></div>';
+
+  h+='<h2>Keystones</h2><p class="sub">These three decide whether the day counts.</p>';
+  KEYS.forEach(function(x){h+=row(x,sel,'key')});
+
+  h+='<h2>Extras</h2><p class="sub">Each routine is one box. The small steps live inside it.</p>';
+  BONUS.forEach(function(x){h+=row(x,sel,'')});
+
+  h+='<h2>This week</h2><p class="sub">Weekly targets, so a missed day is not a failure.</p>';
+  WEEK.forEach(function(x){h+=row(x,sel,'',pips(x.id,x.target,sel))});
+
+  h+='<div class="foot"><span id="sync">'+statusText()+'</span>'+
+     '<button data-act="print">Print this week\'s sheet</button></div>';
+
+  var g=gh||{repo:'',token:'',path:'keystones-data.json',branch:''};
+  h+='<details class="backup"'+(bkOpen?' open':'')+'><summary>'+(gh?'Backed up to GitHub. ':'Not backed up yet. ')+'<u>'+(gh?'Settings':'Set up backup')+'</u></summary>'+
+    '<div class="bform">'+
+    '<p>Saves your progress as one small file in a GitHub repo you own, so clearing your browser cannot erase it. Use a private repo just for data, and a fine-grained token limited to that repo with Contents: read and write. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token</a></p>'+
+    '<label for="g-repo">Data repo</label><input id="g-repo" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="username/keystones-data" value="'+esc(g.repo)+'">'+
+    '<label for="g-tok">Token</label><input id="g-tok" type="password" autocomplete="off" placeholder="github_pat_..." value="'+esc(g.token)+'">'+
+    '<label for="g-path">File</label><input id="g-path" type="text" autocapitalize="none" spellcheck="false" value="'+esc(g.path||'keystones-data.json')+'">'+
+    '<label for="g-br">Branch</label><input id="g-br" type="text" autocapitalize="none" spellcheck="false" placeholder="default branch" value="'+esc(g.branch||'')+'">'+
+    '<div class="brow"><button class="primary" data-act="gh-save">Save and sync</button>'+(gh?'<button data-act="gh-off">Disconnect</button>':'')+'</div>'+
+    '<div class="brow"><button data-act="export">Export a copy</button><label class="filebtn" for="imp">Import a copy</label><input id="imp" type="file" accept="application/json,.json" hidden></div>'+
+    '</div></details>';
+
+  appEl.innerHTML=h;
+  var dt=appEl.querySelector('details.win');
+  if(dt)dt.addEventListener('toggle',function(){winOpen=dt.open});
+  var bk=appEl.querySelector('details.backup');
+  if(bk)bk.addEventListener('toggle',function(){bkOpen=bk.open});
+  var imp=document.getElementById('imp');
+  if(imp)imp.addEventListener('change',function(){
+    var f=imp.files&&imp.files[0]; if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var o=JSON.parse(rd.result);
+        if(!o||typeof o!=='object'||typeof o.days!=='object')throw new Error('bad file');
+        state=norm(o); save(); render(); setStatus('Imported from file');
+      }catch(err){setStatus('That file is not a Keystones backup');}
+    };
+    rd.readAsText(f);
+  });
+  ['w0','w1','b0','b1'].forEach(function(id){
+    var el=document.getElementById(id);
+    el.addEventListener('change',function(){
+      var v=el.value; if(!/^\d\d:\d\d$/.test(v))return;
+      var s=state.settings;
+      if(id==='w0')s.wake[0]=v; if(id==='w1')s.wake[1]=v;
+      if(id==='b0')s.bed[0]=v; if(id==='b1')s.bed[1]=v;
+      s.set=true; save(); render();
+    });
+  });
+  buildSheet();
+}
+
+function buildSheet(){
+  var wk=weekKeys(sel);
+  var head='<tr><th class="lab"></th>'+wk.map(function(k,i){return '<th>'+DNAMES[i]+'<small>'+parse(k).getDate()+'</small></th>'}).join('')+'</tr>';
+  var boxes=wk.map(function(){return '<td><i></i></td>'}).join('');
+  function r(h,cls,note){
+    var w=h.when?' ('+fmtRange(state.settings[h.when])+')':'';
+    return '<tr class="'+cls+'"><td class="lab"><b>'+h.t+w+'</b><span>'+h.d+(note||'')+'</span><span>'+h.f+'</span></td>'+boxes+'</tr>';
+  }
+  function g(t){return '<tr class="grp"><td colspan="8">'+t+'</td></tr>'}
+  var html='<h1>Week of '+fmtLong(wk[0],{month:'long',day:'numeric'})+'</h1>'+
+    '<p>Wake '+fmtRange(state.settings.wake)+'. In bed '+fmtRange(state.settings.bed)+'.</p>'+
+    '<table>'+head+g('Keystones: all three make the day count')+
+    KEYS.map(function(x){return r(x,'k')}).join('')+
+    '<tr class="win"><td class="lab"><b>Day counts</b><span>All three keystones checked.</span></td>'+boxes+'</tr>'+
+    g('Extras')+BONUS.map(function(x){return r(x,'')}).join('')+
+    g('Weekly targets')+WEEK.map(function(x){return r(x,'',' Aim for '+x.target+' of 7.')}).join('')+
+    '</table><div class="rules">Floor versions count. Never miss twice. Decide what you will watch before you get into bed.</div>';
+  sheetEl.innerHTML=html;
+}
+
+appEl.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]'); if(!b)return;
+  var a=b.dataset.act;
+  if(a==='full')toggle(sel,b.dataset.id,1);
+  else if(a==='floor')toggle(sel,b.dataset.id,2);
+  else if(a==='prev'){sel=addDays(sel,-1);render()}
+  else if(a==='next'){if(sel<today){sel=addDays(sel,1);render()}}
+  else if(a==='go'){sel=b.dataset.k;render()}
+  else if(a==='today'){sel=today;render()}
+  else if(a==='print'){buildSheet();try{window.print()}catch(err){}}
+  else if(a==='gh-save'){
+    var repo=document.getElementById('g-repo').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\.git$/,'').replace(/\/$/,'');
+    var tok=document.getElementById('g-tok').value.trim();
+    var path=document.getElementById('g-path').value.trim().replace(/^\/+/,'')||'keystones-data.json';
+    var br=document.getElementById('g-br').value.trim();
+    if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){setStatus('Enter the repo as username/name');return}
+    if(!tok){setStatus('Paste your token first');return}
+    gh={repo:repo,token:tok,path:path,branch:br};
+    try{localStorage.setItem(GHK,JSON.stringify(gh));}catch(err){}
+    ghSha=null; ghInit();
+  }
+  else if(a==='gh-off'){
+    try{localStorage.removeItem(GHK);}catch(err){}
+    gh=null; ghSha=null; syncText=''; bkOpen=true; render();
+  }
+  else if(a==='export'){
+    var blob=new Blob([JSON.stringify(state,null,1)],{type:'application/json'});
+    var u=URL.createObjectURL(blob), an=document.createElement('a');
+    an.href=u; an.download='keystones-backup-'+today+'.json';
+    document.body.appendChild(an); an.click(); an.remove();
+    setTimeout(function(){URL.revokeObjectURL(u)},1000);
+  }
+});
+
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState!=='visible')return;
+  var n=nowKey();
+  if(n!==today){if(sel===today)sel=n;today=n;render();}
+});
+
+// Optional account sync: only runs inside Claude's artifact viewer. On GitHub Pages
+// (or any normal host) window.claude does not exist and the page uses localStorage.
+async function initDb(){
+  try{
+    if(!window.claude||!window.claude.use)return;
+    var db=await claude.use('db'), user=await claude.use('user');
+    if(!db||!user)return;
+    var id=await user.id(); if(!id)return;
+    var ref=db.doc('data/users/'+id+'/tracker');
+    var snap=await ref.get();
+    if(snap.exists){
+      var remote=snap.data();
+      if(remote&&(+remote.updated||0)>(state.updated||0)){
+        state=norm(remote);
+        try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}
+      }else{await ref.set(state)}
+    }else{await ref.set(state)}
+    docRef=ref; setSync('account'); render();
+  }catch(e){docRef=null;setSync('device');}
+}
+
+render();
+initDb();
+ghInit();
+})();
+</script>
+</body>
+</html>
